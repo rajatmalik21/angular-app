@@ -5,7 +5,10 @@
 
 trigger:
 - master
-
+stages:
+ - stage: Build
+   jobs:
+   - job: Build
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -20,3 +23,22 @@ steps:
     npm install
     ng build --prod
   displayName: 'npm install and build'
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'Azure subscription 1(ed5a3ecc-1e52-4d22-a561-136e4d5d3ddb)'
+    appType: 'webAppLinux'
+    WebAppName: 'angularwebapp126'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/drop/*.zip'
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    downloadPath: '$(System.ArtifactsDirectory)'
+    artifactName: 'drop'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
